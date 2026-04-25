@@ -1,0 +1,48 @@
+create database Hospital;
+use Hospital;
+
+create table Doctors(
+D_ssn int primary key,
+name varchar(30) not null,
+specialization varchar(50) not null
+);
+
+create table Patients(
+P_ssn int primary key,
+name varchar(50) not null,
+medicalInsurance Bit,
+dateAdmitted date not null,
+dateCheckedOut date 
+);
+
+create table Tests(
+testId int identity primary key,
+testName varchar(50) not null,
+test_date datetime,
+time_test time,
+result varchar(30)
+);
+
+create table Doctors_Patient(
+D_ssn int,
+P_ssn int,
+constraint Doctors_Patient_pk primary key (D_ssn, P_ssn),
+constraint FK_DoctorsPatient_Doctor foreign key (D_ssn) references Doctors(D_ssn),
+constraint FK_DoctorsPatient_Patient foreign key (P_ssn) references Patients(P_ssn)
+);
+
+create table Doctors_Test(
+D_ssn INT,
+testId INT,
+constraint Doctors_Test_pk primary key (D_ssn, testId),
+constraint FK_DoctorsTest_Doctor foreign key (D_ssn) references Doctors(D_ssn),
+constraint FK_DoctorsTest_Test foreign key (testId) references Tests(testId)
+);
+
+create table Patient_Test(
+P_ssn int,
+testId int,
+constraint Patient_Test_pk primary key (P_ssn, testId),
+constraint FK_PatientTest_Patient foreign key (P_ssn) references Patients(P_ssn),
+constraint FK_PatientTest_Test foreign key (testId) references Tests(testId)
+);
