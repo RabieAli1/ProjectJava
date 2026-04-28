@@ -1,0 +1,60 @@
+package com.mycompany.hospitalsystem;
+
+import javax.swing.*;
+import java.awt.*;
+
+class MainFrame extends JFrame {
+    JButton docBtn = new JButton("Doctor");
+    JButton patBtn = new JButton("Patient");
+    JButton testBtn = new JButton("Test");
+
+    public MainFrame() {
+        setTitle("Home - Hospital System");
+        setLayout(null); 
+        setBounds(450, 150, 400, 500); 
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        getContentPane().setBackground(new Color(240, 240, 240)); 
+
+        Font buttonFont = new Font("Arial", Font.BOLD, 16);
+
+   
+        docBtn.setBounds(100, 80, 200, 50);
+        docBtn.setFont(buttonFont);
+        docBtn.setBackground(new Color(70, 130, 180)); 
+        docBtn.setForeground(Color.WHITE); 
+
+        patBtn.setBounds(100, 180, 200, 50);
+        patBtn.setFont(buttonFont);
+        patBtn.setBackground(new Color(60, 179, 113));
+        patBtn.setForeground(Color.WHITE);
+
+        testBtn.setBounds(100, 280, 200, 50);
+        testBtn.setFont(buttonFont);
+        testBtn.setBackground(new Color(255, 99, 71)); 
+        testBtn.setForeground(Color.WHITE);
+
+        add(docBtn);
+        add(patBtn);
+        add(testBtn);
+        docBtn.addActionListener(e -> {
+            new DoctorFrame().setVisible(true);
+            dispose(); 
+        });
+        patBtn.addActionListener(e -> {
+            new PatientFrame().setVisible(true); 
+            dispose();
+        });
+        testBtn.addActionListener(e -> {
+            new TestFrame().setVisible(true);
+            dispose();
+        });
+
+        docBtn.addActionListener(e -> JOptionPane.showMessageDialog(null, "Hello doctor, I'm uploading the clinic details..."));
+        
+        patBtn.addActionListener(e -> JOptionPane.showMessageDialog(null, "Currently available patient recordً"));
+        
+        testBtn.addActionListener(e -> JOptionPane.showMessageDialog(null, "List of tests and examinations"));
+    }
+    public static void main(String[] args) {
+    }
+}
