@@ -1,0 +1,141 @@
+package com.mycompany.hospitalsystem;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+
+
+        
+        
+public class DoctorFrame extends JFrame {
+    JLabel ssnLbl = new JLabel("SSN:");
+    JTextField ssnField = new JTextField();
+    
+    JLabel nameLbl = new JLabel("Name:");
+    JTextField nameField = new JTextField();
+    
+    JLabel specLbl = new JLabel("Specialization:");
+    JTextField specField = new JTextField();
+
+    JButton addBtn = new JButton("Add");
+    JButton updateBtn = new JButton("Update");
+    JButton deleteBtn = new JButton("Delete");
+    JButton searchBtn = new JButton("Search");
+    JButton showAllBtn = new JButton("Show All");
+    JButton backBtn = new JButton("Back");
+
+    DefaultTableModel tableModel;
+    JTable table;
+
+    String dbURL = "jdbc:sqlserver://localhost:1433;databaseName=Hospital;user=sa;password=1234;encrypt=true;trustServerCertificate=true;";
+    
+    public DoctorFrame() {
+        setTitle("Doctors' Administration");
+        setLayout(null);
+        setBounds(300, 100, 600, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        ssnLbl.setBounds(20, 20, 100, 30); ssnField.setBounds(120, 20, 150, 30);
+        nameLbl.setBounds(20, 60, 100, 30); nameField.setBounds(120, 60, 150, 30);
+        specLbl.setBounds(20, 100, 100, 30); specField.setBounds(120, 100, 150, 30);
+
+        add(ssnLbl); add(ssnField);
+        add(nameLbl); add(nameField);
+        add(specLbl); add(specField);
+
+        addBtn.setBounds(20, 150, 80, 30);
+        updateBtn.setBounds(110, 150, 80, 30);
+        deleteBtn.setBounds(200, 150, 80, 30);
+        searchBtn.setBounds(290, 150, 80, 30);
+        showAllBtn.setBounds(380, 150, 100, 30);
+        backBtn.setBounds(490, 150, 80, 30);
+
+        add(addBtn); add(updateBtn); add(deleteBtn); add(searchBtn); add(showAllBtn); add(backBtn);
+
+        String[] columns = {"dssn", "Name", "Specialization"};
+        tableModel = new DefaultTableModel(columns, 0);
+        table = new JTable(tableModel);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBounds(20, 200, 550, 300);
+        add(sp);
+
+
+        //1-ADD/Insert
+        
+        addBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "INSERT INTO Doctors (D_ssn, name, specialization) VALUES (?, ?, ?)";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setInt(1, Integer.parseInt(ssnField.getText())); 
+                pst.setString(2, nameField.getText());
+                pst.setString(3, specField.getText());
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Added successfully");
+                clearFields();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        //2-Updat
+        updateBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "UPDATE Doctors SET name=?, specialization=? WHERE D_ssn=?";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setString(1, nameField.getText());
+                pst.setString(2, specField.getText());
+                pst.setInt(3, Integer.parseInt(ssnField.getText()));
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Edited successfully");
+                clearFields();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        deleteBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "DELETE FROM Doctors WHERE D_ssn=?";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setInt(1, Integer.parseInt(ssnField.getText()));
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Successfully deleted");
+                clearFields();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        searchBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "SELECT * FROM Doctors WHERE D_ssn=?";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setInt(1, Integer.parseInt(ssnField.getText()));
+                ResultSet rs = pst.executeQuery();
+                if (rs.next()) {
+                    nameField.setText(rs.getString("name"));
+                    specField.setText(rs.getString("specialization"));
+                } else {
+                    JOptionPane.showMessageDialog(null, "The doctor is not here!");
+                }
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        showAllBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "SELECT * FROM Doctors";
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql);
+                tableModel.setRowCount(0); // بيفضي الجدول القديم
+                while (rs.next()) {
+                    tableModel.addRow(new Object[]{rs.getInt("D_ssn"), rs.getString("name"), rs.getString("specialization")});
+                }
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        backBtn.addActionListener(e -> {
+            new MainFrame().setVisible(true);
+            dispose();
+        });
+    }
+
+    private void clearFields() {
+        ssnField.setText("");
+        nameField.setText("");
+        specField.setText("");
+    }
+}
