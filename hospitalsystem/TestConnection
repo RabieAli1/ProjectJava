@@ -1,0 +1,15 @@
+package com.mycompany.hospitalsystem;
+
+import java.sql.*;
+
+public class TestConnection {
+    public static void main(String[] args) {
+        try {
+            Connection con = DBConnection.getConnection();
+            System.out.println("Connected successfully!");
+            con.close();
+        } catch (SQLException e) {
+            System.out.println("Connection failed: " + e.getMessage());
+        }
+    }
+}
