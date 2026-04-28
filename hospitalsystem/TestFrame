@@ -1,0 +1,165 @@
+package com.mycompany.hospitalsystem;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.sql.*;
+
+public class TestFrame extends JFrame {
+    JLabel idLbl = new JLabel("Test ID:");
+    JTextField idField = new JTextField();
+    
+    JLabel nameLbl = new JLabel("Test Name:");
+    JTextField nameField = new JTextField();
+    
+    JLabel dateLbl = new JLabel("Date (YYYY-MM-DD):");
+    JTextField dateField = new JTextField();
+    
+    JLabel timeLbl = new JLabel("Time (HH:MM:SS):");
+    JTextField timeField = new JTextField();
+    
+    JLabel resultLbl = new JLabel("Result:");
+    JTextField resultField = new JTextField();
+
+    JButton addBtn = new JButton("Add");
+    JButton updateBtn = new JButton("Update");
+    JButton deleteBtn = new JButton("Delete");
+    JButton searchBtn = new JButton("Search");
+    JButton showAllBtn = new JButton("Show All");
+    JButton backBtn = new JButton("Back");
+
+    
+    DefaultTableModel tableModel;
+    JTable table;
+
+    String dbURL = "jdbc:sqlserver://localhost:1433;databaseName=Hospital;user=sa;password=1234;encrypt=true;trustServerCertificate=true;";
+
+    public TestFrame() {
+        setTitle("Analysis and Testing Department");
+        setLayout(null);
+        setBounds(300, 50, 650, 650);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        idLbl.setBounds(20, 20, 150, 30); idField.setBounds(180, 20, 150, 30);
+        nameLbl.setBounds(20, 60, 150, 30); nameField.setBounds(180, 60, 150, 30);
+        dateLbl.setBounds(20, 100, 150, 30); dateField.setBounds(180, 100, 150, 30);
+        timeLbl.setBounds(20, 140, 150, 30); timeField.setBounds(180, 140, 150, 30);
+        resultLbl.setBounds(20, 180, 150, 30); resultField.setBounds(180, 180, 150, 30);
+
+        add(idLbl); add(idField);
+        add(nameLbl); add(nameField);
+        add(dateLbl); add(dateField);
+        add(timeLbl); add(timeField);
+        add(resultLbl); add(resultField);
+
+        addBtn.setBounds(20, 230, 80, 30);
+        updateBtn.setBounds(110, 230, 80, 30);
+        deleteBtn.setBounds(200, 230, 80, 30);
+        searchBtn.setBounds(290, 230, 80, 30);
+        showAllBtn.setBounds(380, 230, 100, 30);
+        backBtn.setBounds(490, 230, 80, 30);
+
+        add(addBtn); add(updateBtn); add(deleteBtn); add(searchBtn); add(showAllBtn); add(backBtn);
+
+        String[] columns = {"Test ID", "Name", "Date", "Time", "Result"};
+        tableModel = new DefaultTableModel(columns, 0);
+        table = new JTable(tableModel);
+        JScrollPane sp = new JScrollPane(table);
+        sp.setBounds(20, 280, 600, 300);
+        add(sp);
+
+
+        addBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "INSERT INTO Tests (testName, test_date, time_test, result) VALUES (?, ?, ?, ?)";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                
+                pst.setString(1, nameField.getText());
+                pst.setString(2, dateField.getText().isEmpty() ? null : dateField.getText()); 
+                pst.setString(3, timeField.getText().isEmpty() ? null : timeField.getText()); 
+                pst.setString(4, resultField.getText());
+                
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Added successfully");
+                clearFields();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+        // 2. Update
+        updateBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "UPDATE Tests SET testName=?, test_date=?, time_test=?, result=? WHERE testId=?";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setString(1, nameField.getText());
+                pst.setString(2, dateField.getText().isEmpty() ? null : dateField.getText());
+                pst.setString(3, timeField.getText().isEmpty() ? null : timeField.getText());
+                pst.setString(4, resultField.getText());
+                pst.setInt(5, Integer.parseInt(idField.getText()));
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Edited successfully");
+                clearFields();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        // 3. Delete
+        deleteBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "DELETE FROM Tests WHERE testId=?";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setInt(1, Integer.parseInt(idField.getText()));
+                pst.executeUpdate();
+                JOptionPane.showMessageDialog(null, "Successfully deleted");
+                clearFields();
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        // 4. Search
+        searchBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "SELECT * FROM Tests WHERE testId=?";
+                PreparedStatement pst = conn.prepareStatement(sql);
+                pst.setInt(1, Integer.parseInt(idField.getText()));
+                ResultSet rs = pst.executeQuery();
+                if (rs.next()) {
+                    nameField.setText(rs.getString("testName"));
+                    dateField.setText(rs.getString("test_date") != null ? rs.getString("test_date").substring(0, 10) : ""); 
+                    timeField.setText(rs.getString("time_test") != null ? rs.getString("time_test").substring(0, 8) : "");
+                    resultField.setText(rs.getString("result"));
+                } else {
+                    JOptionPane.showMessageDialog(null, "The analysis is not available!");
+                }
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        // 5. Show All
+        showAllBtn.addActionListener(e -> {
+            try (Connection conn = DriverManager.getConnection(dbURL)) {
+                String sql = "SELECT * FROM Tests";
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql);
+                tableModel.setRowCount(0); 
+                while (rs.next()) {
+                    tableModel.addRow(new Object[]{
+                        rs.getInt("testId"), 
+                        rs.getString("testName"), 
+                        rs.getString("test_date") != null ? rs.getString("test_date").substring(0, 10) : "",
+                        rs.getString("time_test") != null ? rs.getString("time_test").substring(0, 8) : "",
+                        rs.getString("result")
+                    });
+                }
+            } catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); }
+        });
+
+        // Back
+        backBtn.addActionListener(e -> {
+            new MainFrame().setVisible(true);
+            dispose();
+        });
+    }
+
+    private void clearFields() {
+        idField.setText("");
+        nameField.setText("");
+        dateField.setText("");
+        timeField.setText("");
+        resultField.setText("");
+    }
+}
