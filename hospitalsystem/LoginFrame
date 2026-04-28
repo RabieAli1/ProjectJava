@@ -1,0 +1,46 @@
+
+package com.mycompany.hospitalsystem;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+
+
+public class LoginFrame extends JFrame{
+    JLabel label=new JLabel("Enter the Password:");
+    JPasswordField passField =new JPasswordField();
+    JButton loginBtn = new JButton("Enter");
+public LoginFrame(){
+    setTitle("Login page");
+    setLayout(null); 
+    setBounds(400, 200, 500, 400);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    label.setBounds(150, 50, 200, 40);
+    passField.setBounds(100, 120, 300, 40);
+    loginBtn.setBounds(175, 220, 150, 50);
+    
+        add(label);
+        add(passField);
+        add(loginBtn);
+        
+        loginBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String pass = new String(passField.getPassword());
+                if(pass.equals("123")) { 
+                    new MainFrame().setVisible(true); 
+                    dispose(); 
+                } else {
+                    JOptionPane.showMessageDialog(null, "The password is incorrect");
+                }
+            }
+        });
+}
+public static void main(String[] args) {
+        new LoginFrame().setVisible(true);
+    }
+}
+
